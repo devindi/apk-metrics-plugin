@@ -1,0 +1,25 @@
+apply plugin: 'com.android.application'
+apply plugin: 'apk-metrics'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.devindi.sample"
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+    flavorDimensions "env"
+    productFlavors {
+        stage {
+            dimension "env"
+        }
+        production {
+            dimension "env"
+        }
+        mock {
+            dimension "env"
+        }
+    }
+}
