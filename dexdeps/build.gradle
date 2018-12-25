@@ -1,0 +1,25 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.9'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'com.novoda.bintray-release'
+
+repositories {
+    jcenter()
+}
+
+publish {
+    userOrg = 'devindi'
+    groupId = "com.devindi"
+    artifactId = "dexdeps"
+    publishVersion = '1.0'
+    desc = "Dexdeps-As-A-Library. Google's dexdeps tool packaged to library"
+    licences = ['Apache-2.0']
+    website = 'https://github.com/devindi/apk-metrics-plugin'
+}

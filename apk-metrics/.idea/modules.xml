@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/apk-metrics.iml" filepath="$PROJECT_DIR$/.idea/apk-metrics.iml" />
-      <module fileurl="file://$PROJECT_DIR$/apk-metrics.iml" filepath="$PROJECT_DIR$/apk-metrics.iml" />
     </modules>
   </component>
 </project>
