@@ -74,6 +74,7 @@ class ApkMetricsPlugin implements Plugin<Project> {
 				DexCountTask task = project.tasks.create("dexCount$key", DexCountTask) as DexCountTask
 				task.description = "Collect dex count"
 				task.group = "devindi"
+				task.output = output
 			}
 		}
 	}
