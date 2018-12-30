@@ -30,7 +30,7 @@ class ApkMetricsPlugin implements Plugin<Project> {
 		HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
 			@Override
 			void log(String message) {
-				project.logger.debug(message)
+				project.logger.lifecycle(message)
 			}
 		})
 		logging.setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -63,6 +63,17 @@ class ApkMetricsPlugin implements Plugin<Project> {
 	}
 
 	private void initDexCount(Project project, DomainObjectSet<BaseVariant> variants) {
+		HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+			@Override
+			void log(String message) {
+				project.logger.lifecycle(message)
+			}
+		})
+		logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+		OkHttpClient client = new OkHttpClient.Builder()
+				.addInterceptor(logging)
+				.build()
+
 		variants.all { BaseVariant variant ->
 			variant.outputs.each { output ->
 				def key = variant.name.capitalize()
@@ -75,6 +86,8 @@ class ApkMetricsPlugin implements Plugin<Project> {
 				task.description = "Collect dex count"
 				task.group = "devindi"
 				task.output = output
+				task.appInfoResolver = new AppInfoResolver()
+				task.reporter = new MetricsReporter(client, new JsonSlurper(), "http://localhost:9000/api/v0/measurement/add", project.logger)
 			}
 		}
 	}

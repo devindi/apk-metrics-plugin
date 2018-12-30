@@ -5,20 +5,20 @@ import com.android.dexdeps.MethodRef
 import com.getkeepsafe.dexcount.Deobfuscator
 import com.getkeepsafe.dexcount.DexFile
 import com.getkeepsafe.dexcount.PackageTree
-import org.jetbrains.annotations.NotNull
 
 class DexCalculator {
 
-    void doCalculation(File file) {
+    @SuppressWarnings("GrMethodMayBeStatic")
+    DexInfo doCalculation(File file) {
 
-        PackageTree tree
+        PackageTree tree = null
 
         def dataList = DexFile.extractDexData(file, 0)
 
         try {
             tree = new PackageTree(new Deobfuscator(null) {
                 @Override
-                String deobfuscate(@NotNull String name) {
+                String deobfuscate(String name) {
                     return name
                 }
             })
@@ -37,9 +37,6 @@ class DexCalculator {
             }
         }
 
-        println("Method count: $tree.methodCount")
-        println("Field count: $tree.fieldCount")
-        println("Class count: $tree.classCount")
-
+        return new DexInfo(tree.classCount, tree.methodCount, tree.fieldCount)
     }
 }
