@@ -23,3 +23,7 @@ android {
         }
     }
 }
+
+metrics {
+    apiToken "65ea6241-7d6f-4895-846c-6b99037e2cc5"
+}

@@ -6,9 +6,9 @@ import com.devindi.gradle.apm.dex.DexCountTask
 import com.devindi.gradle.apm.size.ApkSizeTask
 import com.devindi.gradle.internal.AppInfoResolver
 import com.devindi.gradle.internal.MetricsReporter
+import com.devindi.gradle.internal.OkHttpFactory
 import groovy.json.JsonSlurper
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -16,28 +16,27 @@ import org.gradle.api.Project
 @SuppressWarnings("GrMethodMayBeStatic")
 class ApkMetricsPlugin implements Plugin<Project> {
 
+	private final OkHttpFactory httpClientFactory = new OkHttpFactory()
+	private OkHttpClient httpClient
+	private MetricsReporter metricsReporter
+	private AppInfoResolver appInfoResolver = new AppInfoResolver()
+
 	void apply(Project project) {
-		project.logger.lifecycle("Hello world, apk metrics.!")
+		def extension = project.extensions.create("metrics", ApkMetricsExtension)
+		project.logger.lifecycle("$extension")
+		httpClient = httpClientFactory.createHttpClient(project.logger)
+		metricsReporter = new MetricsReporter(httpClient, new JsonSlurper(), extension, project.logger)
 		if (project.plugins.hasPlugin("com.android.application")) {
-			applyToProject(project, project.extensions.findByType(AppExtension).applicationVariants)
-			initDexCount(project, project.extensions.findByType(AppExtension).applicationVariants)
+			def variants = project.extensions.findByType(AppExtension).applicationVariants
+
+			initArtifactSize(project, variants)
+			initDexCount(project, variants)
 		} else {
 			project.logger.lifecycle("Project is not app")
 		}
 	}
 
-	private def applyToProject(Project project, DomainObjectSet<BaseVariant> variants) {
-		HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-			@Override
-			void log(String message) {
-				project.logger.lifecycle(message)
-			}
-		})
-		logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-		OkHttpClient client = new OkHttpClient.Builder()
-				.addInterceptor(logging)
-				.build()
-
+	private def initArtifactSize(Project project, DomainObjectSet<BaseVariant> variants) {
 		variants.all { BaseVariant variant ->
 			variant.outputs.each { output ->
 				def key = variant.name.capitalize()
@@ -46,34 +45,19 @@ class ApkMetricsPlugin implements Plugin<Project> {
 					key += output.name
 				}
 
-				ApkSizeTask task = project.tasks.create("size${key}Apk", ApkSizeTask) as ApkSizeTask
+				ApkSizeTask task = project.tasks.create("size$key", ApkSizeTask) as ApkSizeTask
 
 				task.description = "Collect apk size"
 				task.group = "devindi"
 				task.variant = variant
 				task.output = output
-				task.appInfoResolver = new AppInfoResolver()
-				task.reporter = new MetricsReporter(client, new JsonSlurper(), "http://localhost:9000/api/v0/measurement/add", project.logger)
-
-				project.logger.lifecycle("Create task $task.name")
-
-				project.logger.lifecycle("flavors $variant.name - ${variant.productFlavors[0].name}")
+				task.appInfoResolver = appInfoResolver
+				task.reporter = metricsReporter
 			}
 		}
 	}
 
 	private void initDexCount(Project project, DomainObjectSet<BaseVariant> variants) {
-		HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-			@Override
-			void log(String message) {
-				project.logger.lifecycle(message)
-			}
-		})
-		logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-		OkHttpClient client = new OkHttpClient.Builder()
-				.addInterceptor(logging)
-				.build()
-
 		variants.all { BaseVariant variant ->
 			variant.outputs.each { output ->
 				def key = variant.name.capitalize()
@@ -86,8 +70,8 @@ class ApkMetricsPlugin implements Plugin<Project> {
 				task.description = "Collect dex count"
 				task.group = "devindi"
 				task.output = output
-				task.appInfoResolver = new AppInfoResolver()
-				task.reporter = new MetricsReporter(client, new JsonSlurper(), "http://localhost:9000/api/v0/measurement/add", project.logger)
+				task.appInfoResolver = appInfoResolver
+				task.reporter = metricsReporter
 			}
 		}
 	}

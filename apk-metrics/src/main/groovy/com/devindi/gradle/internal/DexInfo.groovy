@@ -2,9 +2,9 @@ package com.devindi.gradle.internal
 
 class DexInfo {
 
-    private final int classCount;
-    private final int methodCount;
-    private final int fieldCount;
+    final int classCount
+    final int methodCount
+    final int fieldCount
 
     DexInfo(int classCount, int methodCount, int fieldCount) {
         this.classCount = classCount
@@ -12,15 +12,13 @@ class DexInfo {
         this.fieldCount = fieldCount
     }
 
-    int getClassCount() {
-        return classCount
-    }
 
-    int getMethodCount() {
-        return methodCount
-    }
-
-    int getFieldCount() {
-        return fieldCount
+    @Override
+    String toString() {
+        return "DexInfo{" +
+                "classCount=" + classCount +
+                ", methodCount=" + methodCount +
+                ", fieldCount=" + fieldCount +
+                '}'
     }
 }

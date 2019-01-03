@@ -1,5 +1,6 @@
 package com.devindi.gradle.internal
 
+import com.devindi.gradle.apm.ApkMetricsExtension
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import okhttp3.*
@@ -9,14 +10,14 @@ class MetricsReporter {
 
     private final OkHttpClient okHttpClient
     private final JsonSlurper jsonSlurper
-    private final HttpUrl baseUrl
     private final Logger logger
+    private final ApkMetricsExtension extension
 
-    MetricsReporter(OkHttpClient okHttpClient, JsonSlurper jsonSlurper, String baseUrl, Logger logger) {
+    MetricsReporter(OkHttpClient okHttpClient, JsonSlurper jsonSlurper, ApkMetricsExtension extension, Logger logger) {
+        this.extension = extension
         this.logger = logger
         this.okHttpClient = okHttpClient
         this.jsonSlurper = jsonSlurper
-        this.baseUrl = HttpUrl.parse(baseUrl)
     }
 
     void sendApkSize(String packageId, String version, long size) {
@@ -45,7 +46,7 @@ class MetricsReporter {
         MediaType json = MediaType.parse("application/json")
         RequestBody requestBody = RequestBody.create(json, requestBodyJson)
 
-        def request = new Request.Builder().url(baseUrl).post(requestBody).header("X-Token", "65ea6241-7d6f-4895-846c-6b99037e2cc5").build()
+        def request = new Request.Builder().url("$extension.serverUrl/api/v0/measurement/add").post(requestBody).header("X-Api-Token", extension.apiToken).build()
         def response = okHttpClient.newCall(request).execute()
 
         def responseCode = response.code()
@@ -69,12 +70,12 @@ class MetricsReporter {
 
 
         @Override
-        public String toString() {
+        String toString() {
             return "SendMeasurementsRequest{" +
                     "packageId='" + packageId + '\'' +
                     ", version='" + version + '\'' +
                     ", measurements=" + measurements +
-                    '}';
+                    '}'
         }
     }
 }

@@ -2,9 +2,9 @@ package com.devindi.gradle.internal
 
 class Measurement {
 
-    final Date measuredAt;
-    final String key;
-    final String value;
+    final Date measuredAt
+    final String key
+    final String value
 
     Measurement(Date measuredAt, String key, String value) {
         this.measuredAt = measuredAt
@@ -13,11 +13,11 @@ class Measurement {
     }
 
     @Override
-    public String toString() {
+    String toString() {
         return "Measurement{" +
                 "measuredAt=" + measuredAt +
                 ", key='" + key + '\'' +
                 ", value='" + value + '\'' +
-                '}';
+                '}'
     }
 }
